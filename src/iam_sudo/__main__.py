@@ -27,7 +27,7 @@ from iam_sudo.sudo import AssumeRoleError, assume_role, remote_assume_role
     "--role-name", required=True, help="of the role to get the credentials for"
 )
 @click.option("--principal", required=False, help="the role belongs to")
-@click.option("--base-role", required=False, help="base role to assume")
+@click.option("--base-role", required=False, help="to assume")
 @click.option("--profile", required=False, help="to save the credentials under")
 @click.option("--remote", required=False, is_flag=True, help="invoke lambda")
 @click.option("--verbose", required=False, is_flag=True, help="log output")

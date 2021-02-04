@@ -11,7 +11,7 @@
 ```
 --role-name TEXT  of the role to get the credentials for  [required]
 --principal TEXT  the role belongs to
---base-role TEXT  base role to assume
+--base-role TEXT  to assume
 --profile TEXT    to save the credentials under
 --remote          invoke lambda
 ```
