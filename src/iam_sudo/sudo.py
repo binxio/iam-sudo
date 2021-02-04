@@ -26,17 +26,18 @@ def find_role(name: str, principal: Optional[Principal]) -> Role:
     if len(roles) == 1:
         return roles[0]
 
+    msg = f"matching name {name} and principal" if principal else f"matching name {name}"
     if roles:
         r = list(filter(lambda r: r.name == name, roles))
         if len(r) == 1:
             return r[0]
 
         raise AssumeRoleError(
-            f"found multiple potential roles matching name {name} and principal {principal}"
+            f"found multiple roles {msg}"
         )
     else:
         raise AssumeRoleError(
-            f"no roles matching name {name} and principal {principal} found"
+            f"no roles {msg}"
         )
 
 
