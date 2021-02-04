@@ -27,13 +27,14 @@ def main(ctx, role_name, principal, base_role, profile, remote, cmd, verbose):
             credentials = remote_assume_role(base_role, role_name, principal)
         else:
             if not base_role:
-                base_role = "IAMSudoUser"
+                base_role = os.getenv("IAM_SUDO_BASE_ROLE", "IAMSudoRole")
             credentials = assume_role(base_role, role_name, principal)
 
         if profile:
             credentials.write_aws_config(profile)
         if cmd:
-            credentials.run(cmd)
+            r = credentials.run(cmd)
+            exit(r.returncode)
 
     except AssumeRoleError as e:
         logging.error(f"{e}")

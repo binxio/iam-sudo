@@ -82,9 +82,9 @@ aws configure set aws_session_token "{self.aws_session_token}"
         env["AWS_SESSION_TOKEN"] = self.aws_session_token
         return env
 
-    def run(self, cmd: List[str]):
+    def run(self, cmd: List[str]) -> subprocess.CompletedProcess:
 
-        r = subprocess.run(
+        return subprocess.run(
             args=cmd,
             env=self.new_env(),
             text=False,
@@ -93,7 +93,6 @@ aws configure set aws_session_token "{self.aws_session_token}"
             stdout=sys.stdout,
             stderr=sys.stderr,
         )
-        exit(r.returncode)
 
     def write_aws_config(self, profile: str):
         filename = path.expanduser(path.expandvars("~/.aws/credentials"))
