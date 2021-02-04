@@ -7,7 +7,15 @@ Parameters:
     Default: ''
   LambdaZipFileName:
     Type: String
-    Default: lambdas/iam-sudo-0.1.2.yaml
+    Default: lambdas/iam-sudo-0.1.2.zip
+  AllowedRoleNames:
+    Description: "Allowed role names (glob)"
+    Type: String
+    Default: "iam-sudo-demo-*"
+  AllowedPrincipal:
+    Description: "allowed owner principal roles (glob)"
+    Type: String
+    Default: "Service: ecs-tasks.amazonaws.com"
 
 Conditions:
   UsePublicBucket: !Equals
@@ -32,10 +40,9 @@ Resources:
           IAM_SUDO_BASE_ROLE: !GetAtt Role.Arn
           IAM_SUDO_POLICY: !Sub |
             allowed-role-names:
-              - "iam-sudo-demo-*"
+              - ${AllowedRoleNames}
             allowed-principals:
-              - Service: codebuild.amazonaws.com
-              - Service: ecs-tasks.amazonaws.com
+              - ${AllowedPrincipal}
             allowed-base-roles:
               - ${Role.Arn}
               - ${Role}

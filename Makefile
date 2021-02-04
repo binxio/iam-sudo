@@ -101,9 +101,28 @@ delete-lambda:
 
 demo:
 	aws cloudformation deploy \
-		--capabilities CAPABILITY_IAM \
+		--capabilities CAPABILITY_NAMED_IAM \
 		--stack-name $(NAME)-demo \
 		--template-file ./cloudformation/demo.yaml
+	 @aws cloudformation describe-stacks --stack-name iam-sudo-demo --output text --query '\
+	join(`\n`,\
+		[\
+			join(` `, \
+				[\
+					`aws --profile iam-sudo-demo configure set region `, \
+					Stacks[0].Outputs[?OutputKey==`Region`].OutputValue|[0]\
+				]), \
+			join(` `, \
+				[\
+					`aws --profile iam-sudo-demo configure set aws_access_key_id `, \
+					Stacks[0].Outputs[?OutputKey==`AccessKeyId`].OutputValue|[0]\
+				]), \
+			join(` `, \
+				[\
+					`aws --profile iam-sudo-demo configure set aws_secret_access_key `, \
+					Stacks[0].Outputs[?OutputKey==`SecretAccessKey`].OutputValue|[0]\
+				])\
+		])' | tee /dev/tty | $(SHELL)
 
 delete-demo:
 	aws cloudformation delete-stack --stack-name $(NAME)-demo

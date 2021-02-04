@@ -70,3 +70,33 @@ Resources:
                   - ssm:GetParameter
                 Resource:
                   - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/password/*'
+
+  IamSudoDemoUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: iam-sudo-demo-user
+      Policies:
+        - PolicyName: IamSudo
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:iam-sudo"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:iam-sudo:*"
+
+  IamSudoDemoUserAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref IamSudoDemoUser
+
+Outputs:
+  AccessKeyId:
+    Value: !Ref IamSudoDemoUserAccessKey
+
+  SecretAccessKey:
+    Value: !GetAtt IamSudoDemoUserAccessKey.SecretAccessKey
+
+  Region:
+    Value: !Ref AWS::Region

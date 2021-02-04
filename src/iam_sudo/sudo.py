@@ -1,6 +1,6 @@
 import datetime
 import json
-from base64 import b64decode
+import logging
 from typing import Optional
 
 import boto3
@@ -26,19 +26,17 @@ def find_role(name: str, principal: Optional[Principal]) -> Role:
     if len(roles) == 1:
         return roles[0]
 
-    msg = f"matching name {name} and principal" if principal else f"matching name {name}"
+    msg = (
+        f"matching name {name} and principal" if principal else f"matching name {name}"
+    )
     if roles:
         r = list(filter(lambda r: r.name == name, roles))
         if len(r) == 1:
             return r[0]
 
-        raise AssumeRoleError(
-            f"found multiple roles {msg}"
-        )
+        raise AssumeRoleError(f"found multiple roles {msg}")
     else:
-        raise AssumeRoleError(
-            f"no roles {msg}"
-        )
+        raise AssumeRoleError(f"no roles {msg}")
 
 
 def resolve_base_role(role_name: str) -> str:
@@ -108,23 +106,26 @@ def remote_assume_role(
         request["base_role"] = base_role
 
     client = boto3.client("lambda")
-    response = client.invoke(
-        FunctionName="iam-sudo",
-        InvocationType="RequestResponse",
-        LogType="Tail",
-        Payload=json.dumps(request).encode("utf-8"),
-    )
+    try:
+        response = client.invoke(
+            FunctionName="iam-sudo",
+            InvocationType="RequestResponse",
+            Payload=json.dumps(request).encode("utf-8"),
+        )
+    except client.exceptions.AccessDeniedException as e:
+        raise AssumeRoleError(e["Error"]["Message"])
 
-    reply = None
+    reply = {}
     try:
         reply = json.load(response["Payload"])
     except Exception as e:
-        pass
+        logging.debug("failed to load the json message from the response, %s", e)
 
     function_error = response.get("FunctionError")
     if function_error:
-        log_output = b64decode(response["LogResult"]).decode("utf-8")
-        error_message = reply.get("errorMessage", log_output)
+        error_message = reply.get(
+            "errorMessage", "unknown error occurred while invoking lambda"
+        )
         raise AssumeRoleError(f"{error_message}")
 
     return Credentials(reply)
