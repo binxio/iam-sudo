@@ -1,6 +1,6 @@
 # NAME
 
-   iam-sudo - get credentials to assume an IAM role
+   iam-sudo - assume any AWS IAM role
 
 ## SYNPOSIS
 ```

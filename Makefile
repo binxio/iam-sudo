@@ -65,7 +65,7 @@ test: Pipfile.lock
 	for i in $$PWD/cloudformation/*; do \
 		aws cloudformation validate-template --template-body file://$$i > /dev/null || exit 1; \
 	done
-	PYTHONPATH=$(PWD)/src pipenv run pytest ../tests/test*.py
+	PYTHONPATH=$(PWD)/src pipenv run pytest tests/test*.py
 
 fmt:
 	black $(find src -name *.py) tests/*.py
