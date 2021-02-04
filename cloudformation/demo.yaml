@@ -47,8 +47,7 @@ Resources:
                 Action:
                   - rds:DescribeDBClusters
                 Resource:
-                  - !Sub 'arn:aws:rds:*:${AWS::AccountId}:cluster:aurora'
-                  - !Sub 'arn:aws:rds:*:${AWS::AccountId}:cluster:aurora*'
+                  - '*'
               - Effect: Allow
                 Action:
                   - rds:DescribeDBInstances
@@ -68,7 +67,6 @@ Resources:
                 Resource: '*'
               - Effect: Allow
                 Action:
-                  - ssm:GetParameters
                   - ssm:GetParameter
                 Resource:
                   - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/password/*'
