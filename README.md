@@ -17,8 +17,9 @@
 ```
 
 ## DESCRIPTION
-iam-sudo will read the attached and inline policies of the specified `role-name` to create a session policy with.
-The `base-role` is the role that will be assumed combined with the session policy.
+iam-sudo will read the attached policies and inline policies of the specified `role-name`.
+These policies will be used to create the session policy. The `base-role` is the 
+role that will be assumed combined with the session policy, to mimick the specified role.
 
 `role-name` is a substring of the role to assume. This is to make it easier to assume a
 role that was created by AWS CloudFormation. For instance, both `TaskRoles`
@@ -28,10 +29,10 @@ If multiple matching roles are found, an error is returned. You may also specify
 the `principal` to reduce the number of matching roles: for
 instance `--principal Service:ecs-tasks.amazonaws.com`.
 
-If a `profile` is specified, the credentials will be stored in `~/.aws/credentials`
-under the specified name. if a command is specified, the command will be executed
-with the obtained credentials. This is done by setting the environment variables
-`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_SESSION_TOKEN`.
+If a `profile` is specified, the credentials will be stored in `~/.aws/credentials`. 
+
+If a command is specified, it will be executed with the obtained credentials. This is done
+by setting the environment variables `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_SESSION_TOKEN`.
 
 The `remote` flag wil invoke the iam-sudo Lambda function to generate credentials. This
 remote option, is required to really give users sudo-like permissions which exceeds
