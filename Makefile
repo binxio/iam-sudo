@@ -72,13 +72,21 @@ fmt:
 
 deploy: target/$(NAME)-$(VERSION).zip
 	aws s3 --region $(AWS_REGION) \
-		cp --acl \
-		public-read target/$(NAME)-$(VERSION).zip \
+		cp --acl public-read \
+                target/$(NAME)-$(VERSION).zip \
 		s3://$(S3_BUCKET)/lambdas/$(NAME)-$(VERSION).zip
 	aws s3 --region $(AWS_REGION) \
 		cp --acl public-read \
 		s3://$(S3_BUCKET)/lambdas/$(NAME)-$(VERSION).zip \
 		s3://$(S3_BUCKET)/lambdas/$(NAME)-latest.zip
+	aws s3 --region $(AWS_REGION) \
+		cp --acl public-read \
+                cloudformation/$(NAME).yaml \
+		s3://$(S3_BUCKET)/lambdas/$(NAME)-$(VERSION).yaml
+	aws s3 --region $(AWS_REGION) \
+		cp --acl public-read \
+                s3://$(S3_BUCKET)/lambdas/$(NAME)-$(VERSION).yaml \
+		s3://$(S3_BUCKET)/lambdas/$(NAME)-latest.yaml
 
 deploy-lambda: target/$(NAME)-$(VERSION).zip
 	aws cloudformation deploy \
