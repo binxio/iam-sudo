@@ -1,0 +1,362 @@
+[
+  {
+    "Path": "/",
+    "RoleName": "aws-account-destroyer",
+    "RoleId": "AROAWOZQJPZZUK3KHZLNX",
+    "Arn": "arn:aws:iam::123456789012:role/aws-account-destroyer",
+    "CreateDate": "2020-03-01T22:09:22+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2008-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "codebuild.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole",
+          "Condition": {}
+        }
+      ]
+    },
+    "Description": "",
+    "MaxSessionDuration": 3600
+  },
+  {
+    "Path": "/",
+    "RoleName": "aws-account-destroyer-build-trigger",
+    "RoleId": "AROAWOZQJPZZ3NR5CW5Z5",
+    "Arn": "arn:aws:iam::123456789012:role/aws-account-destroyer-build-trigger",
+    "CreateDate": "2020-03-01T22:09:22+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2008-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "lambda.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole",
+          "Condition": {}
+        }
+      ]
+    },
+    "Description": "",
+    "MaxSessionDuration": 3600
+  },
+  {
+    "Path": "/",
+    "RoleName": "aws-account-destroyer-event-trigger",
+    "RoleId": "AROAWOZQJPZZYIFCF2SUE",
+    "Arn": "arn:aws:iam::123456789012:role/aws-account-destroyer-event-trigger",
+    "CreateDate": "2020-03-01T22:09:22+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2008-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "events.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole",
+          "Condition": {}
+        }
+      ]
+    },
+    "Description": "",
+    "MaxSessionDuration": 3600
+  },
+  {
+    "Path": "/aws-service-role/ssm.amazonaws.com/",
+    "RoleName": "AWSServiceRoleForAmazonSSM",
+    "RoleId": "AROAWOZQJPZZVUIENHAYV",
+    "Arn": "arn:aws:iam::123456789012:role/aws-service-role/ssm.amazonaws.com/AWSServiceRoleForAmazonSSM",
+    "CreateDate": "2019-12-01T13:01:11+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "ssm.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    },
+    "Description": "Provides access to AWS Resources managed or used by Amazon SSM.",
+    "MaxSessionDuration": 3600
+  },
+  {
+    "Path": "/aws-service-role/autoscaling.amazonaws.com/",
+    "RoleName": "AWSServiceRoleForAutoScaling",
+    "RoleId": "AROAWOZQJPZZW7S3BV6ZR",
+    "Arn": "arn:aws:iam::123456789012:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling",
+    "CreateDate": "2019-11-12T08:38:46+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "autoscaling.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    },
+    "Description": "Default Service-Linked Role enables access to AWS Services and Resources used or managed by Auto Scaling",
+    "MaxSessionDuration": 3600
+  },
+  {
+    "Path": "/aws-service-role/cloudwatch-crossaccount.amazonaws.com/",
+    "RoleName": "AWSServiceRoleForCloudWatchCrossAccount",
+    "RoleId": "AROAWOZQJPZZ6BH2KOIEQ",
+    "Arn": "arn:aws:iam::123456789012:role/aws-service-role/cloudwatch-crossaccount.amazonaws.com/AWSServiceRoleForCloudWatchCrossAccount",
+    "CreateDate": "2019-11-14T20:38:55+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "cloudwatch-crossaccount.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    },
+    "Description": "Allows CloudWatch to assume CloudWatch-CrossAccountSharing roles in remote accounts on behalf of the current account in order to display data cross-account, cross region",
+    "MaxSessionDuration": 3600
+  },
+  {
+    "Path": "/aws-service-role/ecs.amazonaws.com/",
+    "RoleName": "AWSServiceRoleForECS",
+    "RoleId": "AROAWOZQJPZZYD53HKS4S",
+    "Arn": "arn:aws:iam::123456789012:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
+    "CreateDate": "2020-05-15T08:56:27+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "ecs.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    },
+    "Description": "Role to enable Amazon ECS to manage your cluster.",
+    "MaxSessionDuration": 3600
+  },
+  {
+    "Path": "/aws-service-role/elasticloadbalancing.amazonaws.com/",
+    "RoleName": "AWSServiceRoleForElasticLoadBalancing",
+    "RoleId": "AROAWOZQJPZZV4BV6ZWM4",
+    "Arn": "arn:aws:iam::123456789012:role/aws-service-role/elasticloadbalancing.amazonaws.com/AWSServiceRoleForElasticLoadBalancing",
+    "CreateDate": "2019-11-12T11:02:33+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "elasticloadbalancing.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    },
+    "Description": "Allows ELB to call AWS services on your behalf.",
+    "MaxSessionDuration": 3600
+  },
+  {
+    "Path": "/aws-service-role/globalaccelerator.amazonaws.com/",
+    "RoleName": "AWSServiceRoleForGlobalAccelerator",
+    "RoleId": "AROAWOZQJPZZTY7YG2SK3",
+    "Arn": "arn:aws:iam::123456789012:role/aws-service-role/globalaccelerator.amazonaws.com/AWSServiceRoleForGlobalAccelerator",
+    "CreateDate": "2020-05-15T08:31:51+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "globalaccelerator.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    },
+    "Description": "Allows Global Accelerator to call AWS services on customer's behalf",
+    "MaxSessionDuration": 3600
+  },
+  {
+    "Path": "/aws-service-role/organizations.amazonaws.com/",
+    "RoleName": "AWSServiceRoleForOrganizations",
+    "RoleId": "AROAWOZQJPZZ7FHDRSNUJ",
+    "Arn": "arn:aws:iam::123456789012:role/aws-service-role/organizations.amazonaws.com/AWSServiceRoleForOrganizations",
+    "CreateDate": "2019-08-19T08:24:36+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "organizations.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    },
+    "Description": "Service-linked role used by AWS Organizations to enable integration of other AWS services with Organizations.",
+    "MaxSessionDuration": 3600
+  },
+  {
+    "Path": "/aws-service-role/rds.amazonaws.com/",
+    "RoleName": "AWSServiceRoleForRDS",
+    "RoleId": "AROAWOZQJPZZ7GSEZFOHJ",
+    "Arn": "arn:aws:iam::123456789012:role/aws-service-role/rds.amazonaws.com/AWSServiceRoleForRDS",
+    "CreateDate": "2019-12-19T09:57:08+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "rds.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    },
+    "Description": "Allows Amazon RDS to manage AWS resources on your behalf",
+    "MaxSessionDuration": 3600
+  },
+  {
+    "Path": "/aws-service-role/support.amazonaws.com/",
+    "RoleName": "AWSServiceRoleForSupport",
+    "RoleId": "AROAWOZQJPZZUSKLSMEX7",
+    "Arn": "arn:aws:iam::123456789012:role/aws-service-role/support.amazonaws.com/AWSServiceRoleForSupport",
+    "CreateDate": "2019-08-19T08:24:34+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "support.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    },
+    "Description": "Enables resource access for AWS to provide billing, administrative and support services",
+    "MaxSessionDuration": 3600
+  },
+  {
+    "Path": "/aws-service-role/trustedadvisor.amazonaws.com/",
+    "RoleName": "AWSServiceRoleForTrustedAdvisor",
+    "RoleId": "AROAWOZQJPZZQC54OMW4O",
+    "Arn": "arn:aws:iam::123456789012:role/aws-service-role/trustedadvisor.amazonaws.com/AWSServiceRoleForTrustedAdvisor",
+    "CreateDate": "2019-08-19T08:24:34+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "trustedadvisor.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    },
+    "Description": "Access for the AWS Trusted Advisor Service to help reduce cost, increase performance, and improve security of your AWS environment.",
+    "MaxSessionDuration": 3600
+  },
+  {
+    "Path": "/",
+    "RoleName": "CloudFormationAdministrator",
+    "RoleId": "AROAWOZQJPZZV7WVMVB7L",
+    "Arn": "arn:aws:iam::123456789012:role/CloudFormationAdministrator",
+    "CreateDate": "2020-03-01T22:08:12+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Sid": "",
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "cloudformation.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    },
+    "Description": "Allows CloudFormation to create and manage AWS stacks and resources on your behalf.",
+    "MaxSessionDuration": 3600
+  },
+  {
+    "Path": "/",
+    "RoleName": "ecsInstanceRole",
+    "RoleId": "AROAWOZQJPZZVWZLDDCWR",
+    "Arn": "arn:aws:iam::123456789012:role/ecsInstanceRole",
+    "CreateDate": "2020-10-14T08:25:57+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2008-10-17",
+      "Statement": [
+        {
+          "Sid": "",
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "ec2.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    },
+    "MaxSessionDuration": 3600
+  },
+  {
+    "Path": "/",
+    "RoleName": "OrganizationAccountAccessRole",
+    "RoleId": "AROAWOZQJPZZ4GSD6EDSQ",
+    "Arn": "arn:aws:iam::123456789012:role/OrganizationAccountAccessRole",
+    "CreateDate": "2019-08-19T08:24:34+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "AWS": "arn:aws:iam::245111612214:root"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    },
+    "MaxSessionDuration": 3600
+  },
+  {
+    "Path": "/",
+    "RoleName": "ssm-managed-instance",
+    "RoleId": "AROAWOZQJPZZ4VLM4SRTV",
+    "Arn": "arn:aws:iam::123456789012:role/ssm-managed-instance",
+    "CreateDate": "2020-07-04T13:09:33+00:00",
+    "AssumeRolePolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "ec2.amazonaws.com"
+          },
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    },
+    "Description": "Allows EC2 instances to call AWS services on your behalf.",
+    "MaxSessionDuration": 3600
+  }
+]

@@ -1,0 +1,17 @@
+FROM python:3.7
+RUN apt-get update && apt-get install -y zip
+WORKDIR /lambda
+
+ADD src/ /lambda/
+RUN pip install --quiet -t /lambda -r /lambda/iam_sudo.egg-info/requires.txt
+RUN find /lambda -type d -print0 | xargs -0 -n 1 -I {} chmod ugo+rx "{}" && \
+    find /lambda -type f -print0 | xargs -0 -n 1 -I {} chmod ugo+r "{}"
+
+RUN python -m compileall -q /lambda
+
+ARG ZIPFILE=lambda.zip
+RUN zip --quiet -9r /${ZIPFILE}  .
+
+FROM scratch
+ARG ZIPFILE
+COPY --from=0 /${ZIPFILE} /

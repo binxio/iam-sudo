@@ -1,0 +1,97 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  LambdaS3Bucket:
+    Type: String
+    Default: ''
+  LambdaZipFileName:
+    Type: String
+    Default: lambdas/iam-sudo-0.1.0.zip
+
+Conditions:
+  UsePublicBucket: !Equals
+    - !Ref 'LambdaS3Bucket'
+    - ''
+
+
+Resources:
+  Lambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: generate credentials to assume an IAM role
+      FunctionName: iam-sudo
+      Code:
+        S3Bucket: !If
+            - UsePublicBucket
+            - !Sub 'binxio-public-${AWS::Region}'
+            - !Ref 'LambdaS3Bucket'
+        S3Key: !Ref 'LambdaZipFileName'
+      Environment:
+        Variables:
+          IAM_SUDO_BASE_ROLE: !GetAtt Role.Arn
+          IAM_SUDO_POLICY: !Sub |
+            allowed-role-names:
+              - "*"
+            allowed-principals:
+              - Service: codebuild.amazonaws.com
+              - Service: ecs-tasks.amazonaws.com
+            allowed-base-roles:
+              - ${Role.Arn}
+              - ${Role}
+
+      Handler: iam_sudo.handler
+      Role: !GetAtt LambdaRole.Arn
+      Runtime: python3.7
+      Timeout: 60
+
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: IAMSudoUser
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: sts:AssumeRole
+            Condition: {}
+      Path: /
+      MaxSessionDuration: 3600
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/PowerUserAccess
+
+
+  Policy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Action: "sts:AssumeRole"
+          Resource:
+            - !GetAtt Role.Arn
+        - Effect: Allow
+          Action:
+            - iam:GetRole
+            - iam:GetRolePolicy
+            - iam:ListRoles
+            - iam:ListRolePolicies
+            - iam:ListAttachedRolePolicies
+          Resource: "*"
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      - !Ref Policy
