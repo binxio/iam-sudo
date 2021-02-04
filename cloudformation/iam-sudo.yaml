@@ -32,7 +32,7 @@ Resources:
           IAM_SUDO_BASE_ROLE: !GetAtt Role.Arn
           IAM_SUDO_POLICY: !Sub |
             allowed-role-names:
-              - "*"
+              - "iam-sudo-demo-*"
             allowed-principals:
               - Service: codebuild.amazonaws.com
               - Service: ecs-tasks.amazonaws.com
