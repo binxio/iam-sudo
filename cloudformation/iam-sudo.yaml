@@ -7,7 +7,7 @@ Parameters:
     Default: ''
   LambdaZipFileName:
     Type: String
-    Default: lambdas/iam-sudo-0.1.0.zip
+    Default: lambdas/iam-sudo-0.1.1.yaml
 
 Conditions:
   UsePublicBucket: !Equals
