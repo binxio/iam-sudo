@@ -79,12 +79,12 @@ pip install iam-sudo
 ```
 aws cloudformation create-stack \
      --stack-name iam-sudo \
-    --template-url  https://binxio-public-eu-central-1.s3.amazonaws.com/lambdas/iam-sudo-latest.yaml \
+    --template-url  https://binxio-public-eu-central-1.s3.amazonaws.com/lambdas/iam-sudo-0.1.2.yaml \
     --capabilities CAPABILITY_NAMED_IAM
 aws cloudformation wait stack-create-complete --stack-name iam-sudoi
 ```
 
-Or launch via the [CloudFormation console](https://console.aws.amazon.com/cloudformation/home?#/stacks/new?stackName=iam-sudo&templateURL=https%3A%2F%2Fbinxio-public-eu-central-1.s3.amazonaws.com%2Flambdas%2Fiam-sudo-latest.yaml)
+Or launch via the [CloudFormation console](https://console.aws.amazon.com/cloudformation/home?#/stacks/new?stackName=iam-sudo&templateURL=https%3A%2F%2Fbinxio-public-eu-central-1.s3.amazonaws.com%2Flambdas%2Fiam-sudo-0.1.2.yaml)
 
 To allow users to use the remote function, they should be granted access to invoke the created Lambda function `iam-sudo`.
 
