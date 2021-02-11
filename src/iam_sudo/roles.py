@@ -114,5 +114,5 @@ class Role(dict):
         try:
             r = iam.get_role(RoleName=name)
             return Role(r["Role"])
-        except iam.exceptions.NoSuchEntity as e:
+        except iam.exceptions.NoSuchEntity:
             return None
