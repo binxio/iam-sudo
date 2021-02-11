@@ -22,17 +22,16 @@ from iam_sudo.sudo import AssumeRoleError, assume_role, remote_assume_role
 
 
 @click.command(help="get credentials to assume an IAM role")
-@click.pass_context
 @click.option(
     "--role-name", required=True, help="of the role to get the credentials for"
 )
 @click.option("--principal", required=False, help="the role belongs to")
 @click.option("--base-role", required=False, help="to assume")
 @click.option("--profile", required=False, help="to save the credentials under")
-@click.option("--remote", required=False, is_flag=True, help="invoke lambda")
+@click.option("--remote/--local", default=True, required=False, is_flag=True, help="invoke lambda, default --remote")
 @click.option("--verbose", required=False, is_flag=True, help="log output")
 @click.argument("CMD", nargs=-1)
-def main(ctx, role_name, principal, base_role, profile, remote, cmd, verbose):
+def main(role_name, principal, base_role, profile, remote, cmd, verbose):
     logging.basicConfig(
         format="%(levelname)s: %(message)s",
         level=os.getenv("LOG_LEVEL", "DEBUG" if verbose else "INFO"),
