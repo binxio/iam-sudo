@@ -13,7 +13,7 @@
 --principal TEXT  the role belongs to
 --base-role TEXT  to assume
 --profile TEXT    to save the credentials under
---remote          invoke lambda
+--remote/--local  invoke lambda, default --remote
 ```
 
 ## DESCRIPTION

@@ -17,6 +17,7 @@ import datetime
 import json
 import logging
 from typing import Optional
+import botocore
 
 import boto3
 
@@ -68,7 +69,7 @@ def convert_timestamp(v):
 
 
 def assume_role(
-    base_role: str, role_name: str, principal: str, verbose: bool = False
+    base_role: str, role_name: str, principal: str
 ) -> Credentials:
 
     policy = Policy.get_default()
@@ -109,7 +110,7 @@ def assume_role(
 
 
 def remote_assume_role(
-    base_role: str, role_name: str, principal: str, verbose: bool = False
+    base_role: str, role_name: str, principal: str
 ) -> Credentials:
 
     request = {
@@ -127,8 +128,8 @@ def remote_assume_role(
             InvocationType="RequestResponse",
             Payload=json.dumps(request).encode("utf-8"),
         )
-    except client.exceptions.AccessDeniedException as e:
-        raise AssumeRoleError(e["Error"]["Message"])
+    except botocore.exceptions.ClientError as e:
+        raise AssumeRoleError(f"{e}")
 
     reply = {}
     try:
