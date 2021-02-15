@@ -27,7 +27,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='iam-sudo',
-    version="0.1.3",
+    version="0.1.4",
     url='https://github.com/binxio/iam-sudo',
     license='BSD',
     author='Mark van Holsteijn',

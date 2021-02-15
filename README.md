@@ -88,13 +88,13 @@ To install the server, type:
 ```
 aws cloudformation create-stack \
      --stack-name iam-sudo \
-    --template-url  https://binxio-public-eu-central-1.s3.amazonaws.com/lambdas/iam-sudo-0.1.3.yaml \
+    --template-url  https://binxio-public-eu-central-1.s3.amazonaws.com/lambdas/iam-sudo-0.1.4.yaml \
     --capabilities CAPABILITY_NAMED_IAM
 aws cloudformation wait stack-create-complete --stack-name iam-sudo
 ```
 
 Alternatively, you can create the stack via
-the [AWS console](https://console.aws.amazon.com/cloudformation/home?#/stacks/new?stackName=iam-sudo&templateURL=https%3A%2F%2Fbinxio-public-eu-central-1.s3.amazonaws.com%2Flambdas%2Fiam-sudo-0.1.3.yaml).
+the [AWS console](https://console.aws.amazon.com/cloudformation/home?#/stacks/new?stackName=iam-sudo&templateURL=https%3A%2F%2Fbinxio-public-eu-central-1.s3.amazonaws.com%2Flambdas%2Fiam-sudo-0.1.4.yaml).
 
 To allow users to use the remote function, they should be granted permission to
 invoke the created Lambda function `iam-sudo`.
