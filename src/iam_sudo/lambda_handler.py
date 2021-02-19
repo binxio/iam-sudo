@@ -24,8 +24,9 @@ from iam_sudo.sudo_policy import Policy
 
 schema = {
     "type": "object",
-    "required": ["role_name"],
+    "required": ["actual", "role_name"],
     "properties": {
+        "actual": {"type": "boolean"},
         "role_name": {"type": "string"},
         "principal": {"type": "string", "pattern": "[^:]+:[^:]+"},
         "base_role": {"type": "string"},
@@ -58,11 +59,19 @@ def handler(request, context):
         logging.info("%s", _policy)
 
     if is_valid_request(request):
-        credentials = assume_role(
-            base_role=request.get("base_role", os.getenv("IAM_SUDO_BASE_ROLE")),
-            principal=request.get("principal"),
-            role_name=request["role_name"],
-        )
+        if request.get("actual"):
+            credentials = assume_role(
+                role_name=request["role_name"],
+                actual=True,
+            )
+        else:
+            credentials = assume_role(
+                base_role=request.get("base_role", os.getenv("IAM_SUDO_BASE_ROLE")),
+                principal=request.get("principal"),
+                role_name=request["role_name"],
+                actual=False,
+            )
+
         return json.loads(credentials.to_json())
 
     else:

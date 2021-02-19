@@ -68,9 +68,34 @@ def convert_timestamp(v):
         return v.isoformat()
 
 
-def assume_role(
-    base_role: str, role_name: str, principal: str
-) -> Credentials:
+def real_assume_role(role_name: str):
+
+    role_arn = resolve_base_role(role_name)
+    name = role_arn.split("/")[-1]
+    role = Role({"Arn": role_arn, "RoleName": name})
+
+    policy = Policy.get_default()
+    if not policy.is_allowed_role_name(role.name):
+        raise AssumeRoleError(f"Policy does not allow to assume the role {role.name}")
+
+    if not policy.is_allowed_base_role(role.arn):
+        raise AssumeRoleError(
+            f"Policy does not allow to assume the base role {role.arn}"
+        )
+
+    try:
+        result = sts.assume_role(
+            RoleArn=role.arn,
+            RoleSessionName=f"iam-sudo-{role.name}",
+            DurationSeconds=3600,
+        )
+    except Exception as e:
+        raise AssumeRoleError(e)
+
+    return Credentials(result["Credentials"])
+
+
+def simulate_assume_role(base_role: str, role_name: str, principal: str) -> Credentials:
 
     policy = Policy.get_default()
 
@@ -86,6 +111,7 @@ def assume_role(
         raise AssumeRoleError(f"Policy does not allow a role for principal {p}")
 
     role = find_role(role_name, p)
+
     if not policy.is_allowed_role(role):
         raise AssumeRoleError(f"Policy does not allow to assume the role {role.name}")
 
@@ -109,13 +135,20 @@ def assume_role(
     return Credentials(result["Credentials"])
 
 
+def assume_role(
+    base_role: str, role_name: str, principal: str, actual: bool
+) -> Credentials:
+    if actual:
+        return real_assume_role(role_name)
+    else:
+        return simulate_assume_role(base_role, role_name, principal)
+
+
 def remote_assume_role(
-    base_role: str, role_name: str, principal: str
+    role_name: str, base_role: str, principal: str, actual: bool
 ) -> Credentials:
 
-    request = {
-        "role_name": role_name,
-    }
+    request = {"role_name": role_name, "actual": actual}
     if principal:
         request["principal"] = principal
     if base_role:

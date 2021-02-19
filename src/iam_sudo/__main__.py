@@ -25,26 +25,48 @@ from iam_sudo.sudo import AssumeRoleError, assume_role, remote_assume_role
 @click.option(
     "--role-name", required=True, help="of the role to get the credentials for"
 )
-@click.option("--principal", required=False, help="the role belongs to")
-@click.option("--base-role", required=False, help="to assume")
 @click.option("--profile", required=False, help="to save the credentials under")
-@click.option("--remote/--local", default=True, required=False, is_flag=True, help="invoke lambda, default --remote")
+@click.option(
+    "--actual/--simulated",
+    required=False,
+    default=True,
+    help="actual or simulated role",
+)
+@click.option("--principal", required=False, help="of the simulated role")
+@click.option("--base-role", required=False, help="of a simulated role")
+@click.option(
+    "--remote/--local",
+    default=True,
+    required=False,
+    is_flag=True,
+    help="invoke lambda, default --remote",
+)
 @click.option("--verbose", required=False, is_flag=True, help="log output")
 @click.argument("CMD", nargs=-1)
-def main(role_name, principal, base_role, profile, remote, cmd, verbose):
+def main(role_name, profile, actual, principal, base_role, remote, cmd, verbose):
     logging.basicConfig(
         format="%(levelname)s: %(message)s",
         level=os.getenv("LOG_LEVEL", "DEBUG" if verbose else "INFO"),
     )
     try:
-        if not remote and not cmd:
+        if actual and base_role:
+            raise click.UsageError(
+                "--base-role is only applicable for a --simulated assume role"
+            )
+        if actual and principal:
+            raise click.UsageError(
+                "--principal is not applicable for a --simulated assume role"
+            )
+
+        if not profile and not cmd:
             raise click.UsageError("specify --profile, a command or both")
+
         if remote:
-            credentials = remote_assume_role(base_role, role_name, principal)
+            credentials = remote_assume_role(role_name, base_role, principal, actual)
         else:
-            if not base_role:
+            if not actual and not base_role:
                 base_role = os.getenv("IAM_SUDO_BASE_ROLE", "IAMSudoRole")
-            credentials = assume_role(base_role, role_name, principal)
+            credentials = assume_role(base_role, role_name, principal, actual)
 
         if profile:
             credentials.write_aws_config(profile)
