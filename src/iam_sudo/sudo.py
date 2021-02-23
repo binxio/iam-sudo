@@ -74,15 +74,6 @@ def real_assume_role(role_name: str):
     name = role_arn.split("/")[-1]
     role = Role({"Arn": role_arn, "RoleName": name})
 
-    policy = Policy.get_default()
-    if not policy.is_allowed_role_name(role.name):
-        raise AssumeRoleError(f"Policy does not allow to assume the role {role.name}")
-
-    if not policy.is_allowed_base_role(role.arn):
-        raise AssumeRoleError(
-            f"Policy does not allow to assume the base role {role.arn}"
-        )
-
     try:
         result = sts.assume_role(
             RoleArn=role.arn,
@@ -135,20 +126,12 @@ def simulate_assume_role(base_role: str, role_name: str, principal: str) -> Cred
     return Credentials(result["Credentials"])
 
 
-def assume_role(
-    base_role: str, role_name: str, principal: str, actual: bool
-) -> Credentials:
-    if actual:
-        return real_assume_role(role_name)
-    else:
-        return simulate_assume_role(base_role, role_name, principal)
-
 
 def remote_assume_role(
-    role_name: str, base_role: str, principal: str, actual: bool
+    role_name: str, base_role: str, principal: str
 ) -> Credentials:
 
-    request = {"role_name": role_name, "actual": actual}
+    request = {"role_name": role_name}
     if principal:
         request["principal"] = principal
     if base_role:

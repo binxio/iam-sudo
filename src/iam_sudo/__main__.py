@@ -17,23 +17,55 @@ import logging
 import os
 
 import click
+from collections import namedtuple
 
-from iam_sudo.sudo import AssumeRoleError, assume_role, remote_assume_role
+from iam_sudo.sudo import AssumeRoleError, simulate_assume_role, real_assume_role, remote_assume_role
+from iam_sudo.principal import Principal
 
 
-@click.command(help="get credentials to assume an IAM role")
+
+Setting = namedtuple("Setting", ["profile", "verbose"])
+
+@click.group(help="get credentials of a real or simulated IAM role")
+@click.option("--verbose", required=False, is_flag=True, help="log output")
+def cli(verbose):
+    logging.basicConfig(
+        format="%(levelname)s: %(message)s",
+        level=os.getenv("LOG_LEVEL", "DEBUG" if verbose else "INFO"),
+    )
+
+@cli.command("assume", help="the IAM role")
 @click.option(
-    "--role-name", required=True, help="of the role to get the credentials for"
+    "--role-name", required=True, help="to assume", metavar="NAME"
 )
-@click.option("--profile", required=False, help="to save the credentials under")
+@click.option("--profile", required=False, help="to save the credentials under", metavar="PROFILE")
+@click.argument("CMD", nargs=-1)
+def assume(role_name, profile, cmd):
+    try:
+        if not profile and not cmd:
+            raise click.UsageError("specify --profile, a command or both")
+
+        credentials = real_assume_role(role_name)
+        if profile:
+            credentials.write_aws_config(profile)
+        if cmd:
+            r = credentials.run(cmd)
+            exit(r.returncode)
+
+    except AssumeRoleError as e:
+        logging.error(f"{e}")
+        exit(1)
+
+
+
+
+
+@cli.command("simulate", help="an IAM role")
 @click.option(
-    "--actual/--simulated",
-    required=False,
-    default=True,
-    help="actual or simulated role",
+    "--role-name", required=True, help="to simulate", metavar="NAME"
 )
-@click.option("--principal", required=False, help="of the simulated role")
-@click.option("--base-role", required=False, help="of a simulated role")
+@click.option("--principal", required=False, help="of the simulated role", metavar="PRINCIPAL", callback=Principal.click_option)
+@click.option("--base-role", required=False, help="to assume to simulate the role", metavar="NAME")
 @click.option(
     "--remote/--local",
     default=True,
@@ -41,32 +73,19 @@ from iam_sudo.sudo import AssumeRoleError, assume_role, remote_assume_role
     is_flag=True,
     help="invoke lambda, default --remote",
 )
-@click.option("--verbose", required=False, is_flag=True, help="log output")
+@click.option("--profile", required=False, help="to save the credentials under", metavar="PROFILE")
 @click.argument("CMD", nargs=-1)
-def main(role_name, profile, actual, principal, base_role, remote, cmd, verbose):
-    logging.basicConfig(
-        format="%(levelname)s: %(message)s",
-        level=os.getenv("LOG_LEVEL", "DEBUG" if verbose else "INFO"),
-    )
+def simulate(role_name, profile, principal, base_role, remote, cmd):
     try:
-        if actual and base_role:
-            raise click.UsageError(
-                "--base-role is only applicable for a --simulated assume role"
-            )
-        if actual and principal:
-            raise click.UsageError(
-                "--principal is not applicable for a --simulated assume role"
-            )
-
         if not profile and not cmd:
             raise click.UsageError("specify --profile, a command or both")
 
         if remote:
-            credentials = remote_assume_role(role_name, base_role, principal, actual)
+            credentials = remote_assume_role(role_name, base_role, str(principal))
         else:
-            if not actual and not base_role:
+            if not base_role:
                 base_role = os.getenv("IAM_SUDO_BASE_ROLE", "IAMSudoRole")
-            credentials = assume_role(base_role, role_name, principal, actual)
+            credentials = simulate_assume_role(base_role, role_name, str(principal))
 
         if profile:
             credentials.write_aws_config(profile)
@@ -80,4 +99,4 @@ def main(role_name, profile, actual, principal, base_role, remote, cmd, verbose)
 
 
 if __name__ == "__main__":
-    main()
+    cli()
