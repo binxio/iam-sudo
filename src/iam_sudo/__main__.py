@@ -76,16 +76,17 @@ def assume(role_name, profile, cmd):
 @click.option("--profile", required=False, help="to save the credentials under", metavar="PROFILE")
 @click.argument("CMD", nargs=-1)
 def simulate(role_name, profile, principal, base_role, remote, cmd):
+    principal = str(principal) if principal else None
     try:
         if not profile and not cmd:
             raise click.UsageError("specify --profile, a command or both")
 
         if remote:
-            credentials = remote_assume_role(role_name, base_role, str(principal))
+            credentials = remote_assume_role(role_name, base_role, principal)
         else:
             if not base_role:
                 base_role = os.getenv("IAM_SUDO_BASE_ROLE", "IAMSudoRole")
-            credentials = simulate_assume_role(base_role, role_name, str(principal))
+            credentials = simulate_assume_role(base_role, role_name, principal)
 
         if profile:
             credentials.write_aws_config(profile)
