@@ -46,7 +46,7 @@ setup(
     test_suite='tests',
     entry_points={
         'console_scripts': [
-            'iam-sudo = iam_sudo.__main__:main'
+            'iam-sudo = iam_sudo.__main__:cli'
         ],
     },
     classifiers=[

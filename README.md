@@ -1,25 +1,46 @@
 # NAME
 
-   iam-sudo - assume any AWS IAM role
+   iam-sudo - get credentials of a real or simulated IAM role
 
-## SYNPOSIS
+## Usage
+
 ```
-  iam-sudo [OPTIONS] [CMD]...
+Usage: iam-sudo assume [OPTIONS] [CMD]...
+
+Options:
+--role-name NAME   to assume  [required]
+--profile PROFILE  to save the credentials under
+
 ```
 
-## OPTIONS
 ```
---role-name TEXT  of the role to get the credentials for  [required]
---principal TEXT  the role belongs to
---base-role TEXT  to assume
---profile TEXT    to save the credentials under
---remote/--local  invoke lambda, default --remote
+Usage: iam-sudo simulate [OPTIONS] [CMD]...
+
+Options:
+  --role-name NAME       to simulate  [required]
+  --principal PRINCIPAL  of the simulated role
+  --base-role NAME       to assume to simulate the role
+  --remote / --local     invoke lambda, default --remote
+  --profile PROFILE      to save the credentials under
 ```
 
 ## DESCRIPTION
-iam-sudo will read the attached policies and inline policies of the specified `role-name`.
-These policies will be used to create the session policy. The `base-role` is the 
-role that will be assumed combined with the session policy, to mimick the specified role.
+
+iam-sudo supports the `assume` and the `simulate` commands.
+
+### assume command
+this command will assume the specified role and return the credentials.
+
+If a `profile` is specified, the credentials will be stored in `~/.aws/credentials`.
+
+If a command is specified, it will be executed with the obtained credentials. This is done
+by setting the environment variables `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_SESSION_TOKEN`.
+
+
+## simulate command
+iam-sudo simulate will read the attached policies and inline policies of the specified `role-name`.
+These policies will be used to create the session policy. The `base-role` is the
+role that will be assumed combined with the session policy, to mimic the specified role.
 
 `role-name` is a substring of the role to assume. This is to make it easier to assume a
 role that was created by AWS CloudFormation. For instance, both `TaskRoles`
@@ -29,7 +50,7 @@ If multiple matching roles are found, an error is returned. You may also specify
 the `principal` to reduce the number of matching roles: for
 instance `--principal Service:ecs-tasks.amazonaws.com`.
 
-If a `profile` is specified, the credentials will be stored in `~/.aws/credentials`. 
+If a `profile` is specified, the credentials will be stored in `~/.aws/credentials`.
 
 If a command is specified, it will be executed with the obtained credentials. This is done
 by setting the environment variables `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_SESSION_TOKEN`.
@@ -39,8 +60,8 @@ remote option, is required to really give users sudo-like permissions which exce
 their own. Without the `remote` flag, the user will not be able to get more
 permissions, than granted to him/her.
 
-## Sudo Policy
-To limit the roles which can be assumed, a policy can be specified. The following
+### Sudo simulated Policy
+To limit the roles which can be simulated, a policy can be specified. The following
 snippet shows the default sudo policy:
 
 ```yaml
@@ -100,7 +121,7 @@ To allow users to use the remote function, they should be granted permission to
 invoke the created Lambda function `iam-sudo`.
 
 ## ENVIRONMENT VARIABLES
-The iam-sudo allows following environment variables to be set:
+The iam-sudo simulate allows following environment variables to be set:
 
 | name | description|
 |------|------------|
