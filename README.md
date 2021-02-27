@@ -129,3 +129,5 @@ The iam-sudo simulate allows following environment variables to be set:
 | IAM\_SUDO\_POLICY | The policy which governs which roles can be assumed, default any |
 
 The lambda function requires you to set both.
+
+Read the blog [How to assume an ECS task role in AWS, the official and the fake way](https://binx.io/blog/2021/02/27/how-to-simulate-an-ecs-task-role-in-aws/).
