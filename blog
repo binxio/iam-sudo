@@ -1,0 +1,288 @@
+# How to simulate an ECS task role in AWS
+
+When you work with AWS ECS and you apply the least-privileged security principle, you create an IAM role
+for each task. While developing the software, you may want to test the role too. However, this is not
+easily done. In this blog we will show you how to can be done in the official way, and in a slightly
+more alternative way with the `iam-sudo` utility for development purposes.
+
+<!--more-->
+
+In our Cloud-Native setup principles, we do not allow anybody to make manual changes to the AWS environment. This
+means that developers have view-only access even to the development environment. All the changes have to
+be done through AWS CloudFormation.
+
+Sometimes it is necessary that a developer gets to debug their software from their local laptop while
+talking to the development environment. This requires them to be able to assume the role of the ECS task.
+
+
+## What is the problem
+
+Typically when you create an AWS ECS Task role, you grant the ecs-tasks service the permission to assume
+the role. This means that only AWS ECS can assume the role, and nobody else. Let me illustrate this
+through the following steps:
+
+- create the role
+- add a policy
+- assume the role
+
+### create the role
+
+To create a role for an AWS ECS task, you grant the service `ecs-tasks.amazonaws.com`
+the permission to so as follows:
+
+```sh
+aws iam create-role  \
+  --role-name iam-sudo-demo-my-task \
+  --assume-role-policy-document '{
+        "Statement":  {
+            "Effect": "Allow",
+            "Principal": { "Service": [ "ecs-tasks.amazonaws.com" ] },
+            "Action": [ "sts:AssumeRole" ]
+         }]}'
+```
+
+### add a policy
+
+Next you can add an inline policy to the role, for instance:
+
+```sh
+aws iam put-role-policy \
+  --role-name iam-sudo-demo-my-task \
+  --policy-name 'describe-parameters' \
+  --policy-document '{
+            "Statement": [{
+                "Effect": "Allow",
+                "Action": [ "ssm:DescribeParameters" ],
+                "Resource": "*"
+            }]}'
+```
+
+### assume the role
+
+To get the credentials to assume this role, you type:
+
+```sh
+ROLE_ARN=$(aws iam get-role \
+  --role-name iam-sudo-demo-my-task \
+  --query Role.Arn \
+  --output text)
+
+aws sts assume-role \
+  --role-arn $ROLE_ARN \
+  --role-session-name no-can-do
+```
+Unfortunately, this fails with the following error:
+
+```
+An error occurred (AccessDenied) when calling the AssumeRole operation:
+  User: arn:aws:iam::**********15:user/mvanholsteijn is not authorized
+  to perform: sts:AssumeRole on resource: arn:aws:iam::**********15:role/iam-sudo-demo-my-task
+```
+
+How come? I am root user of the AWS account! This is caused the absence of
+the `sts:AssumeRole` permission for the AWS account itself.
+
+
+## Possible solutions
+
+There are at least two possible solutions to the problem:
+
+1. extend the assume role document with the AWS account
+1. fake the role using session policies
+
+### extending the assume role to the account
+
+One possible solution is to grant the AWS account the permission to assume the
+role too, as follows:
+
+```sh
+ACCOUNT_ID=$(aws sts get-caller-identity \
+   --query Account --output text)
+
+aws iam create-role  \
+  --role-name iam-sudo-demo-my-task-allow-root-assume-role \
+  --assume-role-policy-document "$(
+     jq -n . --arg account_id $ACCOUNT_ID '{
+        "Statement": [{
+            "Effect": "Allow",
+            "Principal": { "Service": [ "ecs-tasks.amazonaws.com" ] },
+            "Action": [ "sts:AssumeRole" ]
+          },{
+            "Effect": "Allow",
+            "Principal": { "AWS": [ $account_id ] },
+            "Action": [ "sts:AssumeRole" ]
+          }]}'
+     )"
+```
+
+The assume role will now work. It does require that developers are granted
+permission to assume this role too. As we have many ECS task roles with CloudFormation
+generated in separate cloudformation templates, this is quite hard. The easiest way to do this,
+is to to tag the roles as follows:
+
+```sh
+aws iam create-role --tags Key=env,Value=dev ...
+```
+
+And grant a conditional assume role permission to the developers for these roles:
+
+```json
+    "Statement": [{
+        "Effect": "Allow",
+        "Action": "sts:AssumeRole",
+        "Resource": "*",
+        "Condition": {"StringLike": {"iam:ResourceTag/env": "dev"}}
+    }]
+```
+
+Now, this is a solution that works entirely with the IAM solution space. The
+only thing against this, is that it is quite an invasive change which is only
+needed in the development environment.
+
+###  fake the role using session policies
+
+The previous solution is the official solution. But, it adds
+complexity which in our case, and is only required in the development environment.
+
+When you look at the [assume-role api call](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html)
+you will see that when you assume a role, you can specify:
+
+- the role to assume
+- an inline session policy to apply
+- one or more managed policies to apply
+
+This means that when you read an IAM Role, you can apply the inline role policies,
+the attached managed policies and apply them on a role that you *are* allowed
+to assume.
+
+Let me show you how this works. First create a role
+that has sufficient permissions to still have an effective policy:
+
+```sh
+aws iam create-role  \
+  --role-name iam-sudo-demo-power-user \
+  --assume-role-policy-document "$(\
+     jq -n \
+       --arg account_id $ACCOUNT_ID \
+       '{
+        "Statement": [{
+            "Effect": "Allow",
+            "Principal": { "AWS": [ $account_id ] },
+            "Action": [ "sts:AssumeRole" ]
+          }]}' \
+     )"
+
+aws iam attach-role-policy \
+  --role-name iam-sudo-demo-power-user
+  --policy-arn arn:aws:iam::aws:policy/PowerUserAccess
+```
+
+Next we need to retrieve all of the inline session policies of the role:
+
+```sh
+for NAME in $(aws iam list-role-policies \
+  --role-name iam-sudo-demo-my-task \
+  --query PolicyNames --output text) ; \
+do
+   aws iam get-role-policy \
+      --role-name iam-sudo-demo-my-task \
+      --policy-name $NAME
+done | \
+  jq  '.PolicyDocument.Statement' | \
+  jq -s add > inline-policies.json
+```
+
+To retrieve all of the managed policies attached to the role, type:
+
+```sh
+ aws iam list-attached-role-policies \
+   --role-name iam-sudo-demo-my-task \
+   --query 'join(`,`, AttachedPolicies[*].join(`=`, [`arn`, PolicyArn]))' \
+   --output text \
+   | sed -e 's/^./--policy-arns &/' \
+     > attached-policies.txt
+```
+
+Finally, we can simulate the role:
+
+```sh
+aws sts assume-role \
+  --role-arn arn:aws:iam::${ACCOUNT_ID}:role/iam-sudo-demo-power-user \
+  --role-session-name simulate-iam-sudo-demo-my-task \
+  --policy "$(<inline-policies.json)" \
+  $(<attached-policies.txt)
+```
+
+This still looks quite elaborate. That is why we have implemented this in the `iam-sudo` utility.
+
+### using the IAM sudo utility
+
+The [IAM sudo](https://https://pypi.org/project/iam-sudo/) utility simplifies the effort of
+simulating a role. To do what is shown above, just type:
+
+```sh
+pip3 install iam-sudo
+
+iam-sudo simulate --local \
+    --role-name iam-sudo-demo-my-task \
+    --base-role iam-sudo-demo-power-user \
+    --profile iam-sudo-demo-my-task \
+    aws sts get-caller-identity
+```
+```
+INFO: credentials saved under AWS profile iam-sudo-demo-my-task.
+{
+    "UserId": "AROAWOZQJPZZRMGYEX3NX:iam-sudo-iam-sudo-demo-my-task",
+    "Account": "**********15",
+    "Arn": "arn:aws:sts::***********15:assumed-role/iam-sudo-demo-power-user/iam-sudo-iam-sudo-demo-my-task"
+}
+```
+It saves the credentials under the specified profile name and executes the command with them.
+
+### privilege elevation using AWS Lambda
+
+Although simulating the role policies is nice, we still need to assume a role that is powerful
+enough to render an effective session policy. In the example above, we assumed the role
+with power user privileges. Giving this privilege defeats the whole purpose of
+the exercise.
+
+To address this issue, we created an AWS Lambda which will only hand out credentials based
+on a simulated IAM role. Which roles you are allowed to assume is governed by a policy.
+
+To install this lambda, type:
+
+```sh
+aws cloudformation create-stack \
+     --stack-name iam-sudo \
+    --template-url  https://binxio-public-eu-central-1.s3.amazonaws.com/lambdas/iam-sudo-0.2.0.yaml \
+    --capabilities CAPABILITY_NAMED_IAM
+aws cloudformation wait stack-create-complete --stack-name iam-sudo
+```
+If you have the permission to invoke the Lambda, you can simulate the role using the
+credentials provided by the Lambda:
+
+```sh
+iam-sudo simulate --remote \
+   --role-name iam-sudo-demo-my-task \
+   aws sts get-caller-identity
+{
+    "UserId": "AROAWOZQJPZZT625X67RB:iam-sudo-iam-sudo-demo-my-task",
+    "Account": "444093529715",
+    "Arn": "arn:aws:sts::444093529715:assumed-role/IAMSudoUser/iam-sudo-iam-sudo-demo-my-task"
+}
+```
+
+The deployed lambda will only generate credentials for roles for the service `ecs-tasks` and of which the role
+name starts with `iam-sudo-demo`. You can change the [policy](https://github.com/binxio/iam-sudo#sudo-simulated-policy)
+to fit your need.
+
+## Conclusion
+
+To allow developers to assume any role in the development environment, requires
+each of the roles to include the assume role permission for the AWS account. A conditional
+permission to assume these roles can be implemented using IAM resource tags.
+
+The iam-sudo utility is an alternative solution which will simulate a defined role, even if
+you do not have the permission to assume it. The local implementation is harmless. The remote
+implementation provides a backdoor for privilege elevation, so I recommend to deploy it only in
+a development environment.
