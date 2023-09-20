@@ -73,11 +73,12 @@ def real_assume_role(role_name: str):
     role_arn = resolve_base_role(role_name)
     name = role_arn.split("/")[-1]
     role = Role({"Arn": role_arn, "RoleName": name})
+    session_name = "iam-sudo-{role.name}"
 
     try:
         result = sts.assume_role(
             RoleArn=role.arn,
-            RoleSessionName=f"iam-sudo-{role.name}",
+            RoleSessionName=session_name[:60],
             DurationSeconds=3600,
         )
     except Exception as e:
@@ -106,19 +107,27 @@ def simulate_assume_role(base_role: str, role_name: str, principal: str) -> Cred
     if not policy.is_allowed_role(role):
         raise AssumeRoleError(f"Policy does not allow to assume the role {role.name}")
 
+    session_name = f"iam-sudo-{role_name}"
     kwargs = {
         "RoleArn": base_role,
-        "RoleSessionName": f"iam-sudo-{role_name}",
+        "RoleSessionName": session_name[:60],
         "DurationSeconds": 3600,
     }
 
+    policy_length = 0
     if role.attached_policies:
         kwargs["PolicyArns"] = [{"arn": arn} for arn in role.attached_policies]
+        policy_length = sum([len(a["arn"]) for arn in kwargs["PolicyArns"]])
 
     if role.inline_policies:
         kwargs["Policy"] = json.dumps(role.merged_inlined_policy)
+        policy_length += len(kwargs["Policy"])
 
     try:
+        logging.info("combined policy length: %s", policy_length)
+        if policy_length > 2048:
+            logging.info("combined policy length > 2048")
+
         result = sts.assume_role(**kwargs)
     except Exception as e:
         raise AssumeRoleError(e)
